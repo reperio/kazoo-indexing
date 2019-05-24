@@ -1,0 +1,312 @@
+PUT _template/cdrs
+{
+    "order": 0,
+    "index_patterns": "cdrs_*",
+    "settings": {
+        "index": {
+            "number_of_shards": "2",
+            "number_of_replicas": "0"
+        },
+        "analysis": {
+            "normalizer": {
+                "useLowercase": {
+                    "type": "custom",
+                    "filter": [
+                        "lowercase"
+                    ]
+                }
+            }
+        }
+    },
+    "mappings": {
+        "_doc": {
+            "properties": {
+                "authorizing_id": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256,
+                            "normalizer": "useLowercase"
+                        }
+                    }
+                },
+                "billing_seconds": {
+                    "type": "long"
+                },
+                "bridge_id": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256,
+                            "normalizer": "useLowercase"
+                        }
+                    }
+                },
+                "call_id": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256,
+                            "normalizer": "useLowercase"
+                        }
+                    }
+                },
+                "call_priority": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256,
+                            "normalizer": "useLowercase"
+                        }
+                    }
+                },
+                "call_type": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256,
+                            "normalizer": "useLowercase"
+                        }
+                    }
+                },
+                "callee_id_name": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256,
+                            "normalizer": "useLowercase"
+                        }
+                    }
+                },
+                "callee_id_number": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256,
+                            "normalizer": "useLowercase"
+                        }
+                    }
+                },
+                "caller_id_name": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256,
+                            "normalizer": "useLowercase"
+                        }
+                    }
+                },
+                "caller_id_number": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256,
+                            "normalizer": "useLowercase"
+                        }
+                    }
+                },
+                "calling_from": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256,
+                            "normalizer": "useLowercase"
+                        }
+                    }
+                },
+                "cost": {
+                    "type": "float"
+                },
+                "datetime": {
+                    "type": "date",
+                    "format": "yyyy-MM-dd HH:mm:ss"
+                },
+                "dialed_number": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256,
+                            "normalizer": "useLowercase"
+                        }
+                    }
+                },
+                "direction": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256,
+                            "normalizer": "useLowercase"
+                        }
+                    }
+                },
+                "duration_seconds": {
+                    "type": "long"
+                },
+                "from": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256,
+                            "normalizer": "useLowercase"
+                        }
+                    }
+                },
+                "hangup_cause": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256,
+                            "normalizer": "useLowercase"
+                        }
+                    }
+                },
+                "id": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256,
+                            "normalizer": "useLowercase"
+                        }
+                    }
+                },
+                "iso_8601": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256,
+                            "normalizer": "useLowercase"
+                        }
+                    }
+                },
+                "media_recordings": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256,
+                            "normalizer": "useLowercase"
+                        }
+                    }
+                },
+                "media_server": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256,
+                            "normalizer": "useLowercase"
+                        }
+                    }
+                },
+                "other_leg_call_id": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256,
+                            "normalizer": "useLowercase"
+                        }
+                    }
+                },
+                "owner_id": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256,
+                            "normalizer": "useLowercase"
+                        }
+                    }
+                },
+                "rate": {
+                    "type": "float"
+                },
+                "rate_name": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256,
+                            "normalizer": "useLowercase"
+                        }
+                    }
+                },
+                "recording_url": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256,
+                            "normalizer": "useLowercase"
+                        }
+                    }
+                },
+                "request": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256,
+                            "normalizer": "useLowercase"
+                        }
+                    }
+                },
+                "reseller_call_type": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256,
+                            "normalizer": "useLowercase"
+                        }
+                    }
+                },
+                "reseller_cost": {
+                    "type": "float"
+                },
+                "rfc_1036": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256,
+                            "normalizer": "useLowercase"
+                        }
+                    }
+                },
+                "timestamp": {
+                    "type": "long"
+                },
+                "to": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256,
+                            "normalizer": "useLowercase"
+                        }
+                    }
+                },
+                "unix_timestamp": {
+                    "type": "long"
+                }
+            }
+        }
+    }
+}

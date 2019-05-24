@@ -5,7 +5,8 @@ class ElasticService {
         this.config = config;
         this.logger = logger;
 
-        const elasticConfig = Object.assign({}, config.elasticsearchApi);
+        this.logger.info(`Starting elastic client with config: ${JSON.stringify(config)}`);
+        const elasticConfig = Object.assign({}, config);
         this.client = new elasticsearch.Client(elasticConfig);
     }
 
@@ -19,6 +20,14 @@ class ElasticService {
         });
 
         this.logger.info('Elastic request sucessful.');
+        return result;
+    }
+
+    async bulkInsert(data) {
+        const result = await this.client.bulk({
+            body: data
+        });
+
         return result;
     }
 

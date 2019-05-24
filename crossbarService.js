@@ -50,7 +50,7 @@ class CrossbarService {
         }
 
         //seconds from year 0 - 1970 = 62167219200
-        const startTime = moment().subtract(1, 'day').unix() + 62167219200;
+        const startTime = moment().subtract(30, 'day').unix() + 62167219200;
 
         this.logger.info(`Using start time: ${startTime}`)
         

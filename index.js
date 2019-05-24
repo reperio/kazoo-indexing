@@ -17,12 +17,37 @@ class KazooIndexer {
         this.crossbarService = new CrossbarService(config.crossbarApi, logger);
     }
 
+    formatBulkCdrInsert(cdrs) {
+        const formattedCdrs = [];
+
+        cdrs.forEach((cdr) => {
+            const index = 'cdrs_' + moment.utc(cdr.datetime).format('YYYYMM');
+            const header = {
+                update: {
+                    _index: index,
+                    _type: '_doc',
+                    _id: cdr.id
+                }
+            };
+            const doc = {
+                doc: cdr,
+                doc_as_upsert: true
+            };
+
+            formattedCdrs.push(header);
+            formattedCdrs.push(doc);
+        });
+
+        return formattedCdrs;
+    }
+
     async execute() {
         try {
             this.logger.info('Starting');
             
-            this.crossbarService.getCdrs();
-            
+            const cdrs = await this.crossbarService.getCdrs();
+            const formattedCdrs = this.formatBulkCdrInsert(cdrs);
+            await this.elasticService.bulkInsert(formattedCdrs);
 
             this.logger.info(`Finished`);
         } catch (err) {
