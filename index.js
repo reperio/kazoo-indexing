@@ -45,9 +45,19 @@ class KazooIndexer {
         try {
             this.logger.info('Starting');
             
-            const cdrs = await this.crossbarService.getCdrs();
-            const formattedCdrs = this.formatBulkCdrInsert(cdrs);
-            await this.elasticService.bulkInsert(formattedCdrs);
+            const accounts = await this.crossbarService.getAccountChildren(config.accountId);
+
+            for (const account of accounts) {
+                this.logger.info(`Processing - ${account.name}`);
+
+                const cdrs = await this.crossbarService.getCdrs(account.id);
+                if (!cdrs || cdrs.length === 0) {
+                    this.logger.info('No CDRs to index');
+                    continue;
+                }
+                const formattedCdrs = this.formatBulkCdrInsert(cdrs);
+                await this.elasticService.bulkInsert(formattedCdrs);
+            };
 
             this.logger.info(`Finished`);
         } catch (err) {

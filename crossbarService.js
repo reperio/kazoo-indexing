@@ -43,7 +43,7 @@ class CrossbarService {
         return result;
     }
 
-    async getCdrs() {
+    async getCdrs(accountId) {
         this.logger.info(`Getting cdrs from Crossbar`);
         if (!this.authToken) {
             await this.authenticate();
@@ -54,7 +54,7 @@ class CrossbarService {
 
         this.logger.info(`Using start time: ${startTime}`)
         
-        const url = `${this.apiUrl}/accounts/${this.accountId}/cdrs?page_size=100&created_from=${startTime}`;
+        const url = `${this.apiUrl}/accounts/${accountId}/cdrs?page_size=100&created_from=${startTime}`;
 
         const httpOptions = {
             uri: url,
@@ -117,6 +117,32 @@ class CrossbarService {
         const result = await request(httpOptions);
 
         return result;
+    }
+
+    async getAccountChildren(accountId) {
+        this.logger.info(`Getting account children from Crossbar for account ${accountId}`);
+
+        if (!this.authToken) {
+            await this.authenticate();
+        }
+
+        const url = `${this.apiUrl}/accounts/${this.accountId}/children`;
+
+        const httpOptions = {
+            uri: url,
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Auth-Token': this.authToken
+            },
+            json: true
+        };
+
+        this.logger.info(`Sending request to Crossbar: ${JSON.stringify(httpOptions)}`);
+
+        const result = await request(httpOptions);
+
+        return result.data;
     }
 }
 
