@@ -1,6 +1,6 @@
 export const config = {
-    accountId: process.env.ACCOUNT_ID || '',
-    loopInterval: process.env.LOOP_INTERVAL || 5000,
+    loopInterval: process.env.LOOP_INTERVAL || 60000,
+    loopWindow: process.env.LOOP_WINDOW || 5, // minutes
 
     elasticsearchApi: {
         host: [
@@ -29,3 +29,6 @@ export const config = {
         recordings: process.env.INDEX_RECORDING || 'recordings'
     }
 };
+
+export type Config = typeof config;
+export type CrossbarConfig = typeof config.crossbarApi;

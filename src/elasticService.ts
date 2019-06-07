@@ -1,10 +1,11 @@
 import elasticsearch, { Client } from 'elasticsearch';
+import { Logger } from 'winston';
 
 export class ElasticService {
     private logger: any;
     private client: Client;
 
-    constructor(config: any, logger: any) {
+    constructor(config: any, logger: Logger) {
         this.logger = logger;
 
         this.logger.info(`Starting elastic client with config: ${JSON.stringify(config)}`);
@@ -26,9 +27,12 @@ export class ElasticService {
     }
 
     public async bulkInsert(data: any) {
+        this.logger.info(`Bulk inserting/updating ${data.length / 2} documents`);
         const result = await this.client.bulk({
             body: data
         });
+
+        this.logger.info('Bulk insert finished');
 
         return result;
     }
@@ -55,5 +59,3 @@ export class ElasticService {
         return result;
     }
 }
-
-module.exports = ElasticService;

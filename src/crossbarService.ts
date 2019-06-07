@@ -1,15 +1,16 @@
 import request from 'request-promise-native';
 import moment from 'moment';
+import { CrossbarConfig } from './config';
 
 export class CrossbarService {
     private apiUrl: string;
     private account: string;
-    private accountId: number;
+    private accountId: string;
     private credentials: any;
     private logger: any;
     private authToken: string | null;
 
-    constructor(config: any, logger: any) {
+    constructor(config: CrossbarConfig, logger: any) {
         this.apiUrl = config.apiUrl;
         this.account = config.account;
         this.accountId = config.accountId;
@@ -18,36 +19,14 @@ export class CrossbarService {
         this.authToken = null;
     }
 
-    public async getCdrs(accountId: string) {
-        this.logger.info(`Getting cdrs from Crossbar`);
-        if (!this.authToken) {
-            await this.authenticate();
-        }
+    public async getCdrsForDateRange(accountId: string, startDate: Date, endDate: Date) {
+        this.logger.info(`Getting cdrs for range ${startDate} - ${endDate}`);
 
         // seconds from year 0 - 1970 = 62167219200
-        const startTime = moment().subtract(30, 'day').unix() + 62167219200;
+        const startTime = moment(startDate).unix() + 62167219200;
+        const endTime = moment(endDate).unix() + 62167219200;
 
-        this.logger.info(`Using start time: ${startTime}`);
-        
-        const url = `${this.apiUrl}/accounts/${accountId}/cdrs?page_size=100&created_from=${startTime}`;
-
-        const httpOptions = {
-            uri: url,
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Auth-Token': this.authToken
-            },
-            json: true
-        };
-
-        this.logger.info(`Sending request to Crossbar: ${JSON.stringify(httpOptions)}`);
-
-        const result = await request(httpOptions);
-
-        this.logger.info(`Crossbar request complete, found ${result.data.length} cdrs`);
-
-        return result.data;
+        return await this.getCdrs(accountId, startTime, endTime);
     }
 
     public async getRecordings() {
@@ -120,6 +99,50 @@ export class CrossbarService {
         return result.data;
     }
 
+    private async getCdrs(accountId: string, startTime: number, endTime: number) {
+        let cdrs: any = [];
+        this.logger.info(`Getting cdrs from Crossbar`);
+        if (!this.authToken) {
+            await this.authenticate();
+        }
+
+        this.logger.info(`Using start time: ${startTime}`);
+        
+        const url = `${this.apiUrl}/accounts/${accountId}/cdrs?page_size=100&created_from=${startTime}&created_to=${endTime}`;
+
+        let result = await this.sendCrossbarGetRequest(url);
+
+        this.logger.info(`Crossbar request complete, found ${JSON.stringify(result.data.length)} cdrs`);
+        cdrs = cdrs.concat(result.data);
+
+        while (result.next_start_key) {
+            this.logger.info('Getting next page of CDR results');
+            const nextPageUrl = `${this.apiUrl}/accounts/${accountId}/cdrs?page_size=100&created_from=${startTime}&created_to=${endTime}&start_key=${result.next_start_key}`;
+
+            result = await this.sendCrossbarGetRequest(nextPageUrl);
+            this.logger.info(`Crossbar request complete, found ${JSON.stringify(result.data.length)} cdrs`);
+            cdrs = cdrs.concat(result.data);
+        }
+
+        return cdrs;
+    }
+
+    private sendCrossbarGetRequest(url: string) {
+        const httpOptions = {
+            uri: url,
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Auth-Token': this.authToken
+            },
+            json: true
+        };
+
+        this.logger.info(`Sending request to Crossbar: ${JSON.stringify(httpOptions)}`);
+
+        return request(httpOptions);
+    }
+
     private async authenticate() {
         this.logger.info(`Authenticating to Crossbar`);
 
@@ -152,5 +175,3 @@ export class CrossbarService {
         return result;
     }
 }
-
-module.exports = CrossbarService;
