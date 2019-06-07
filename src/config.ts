@@ -1,4 +1,7 @@
-module.exports = {
+export const config = {
+    accountId: process.env.ACCOUNT_ID || '',
+    loopInterval: process.env.LOOP_INTERVAL || 5000,
+
     elasticsearchApi: {
         host: [
             {

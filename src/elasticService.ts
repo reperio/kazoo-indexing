@@ -1,8 +1,10 @@
-const elasticsearch = require('elasticsearch');
+import elasticsearch, { Client } from 'elasticsearch';
 
-class ElasticService {
-    constructor(config, logger) {
-        this.config = config;
+export class ElasticService {
+    private logger: any;
+    private client: Client;
+
+    constructor(config: any, logger: any) {
         this.logger = logger;
 
         this.logger.info(`Starting elastic client with config: ${JSON.stringify(config)}`);
@@ -10,20 +12,20 @@ class ElasticService {
         this.client = new elasticsearch.Client(elasticConfig);
     }
 
-    async createDocument(index, data) {
+    public async createDocument(index: string, data: any) {
         this.logger.info('Creating document');
         const result = await this.client.index({
-            index: index,
+            index,
             type: '_doc',
             body: data,
-            id: data.Id,
+            id: data.Id
         });
 
         this.logger.info('Elastic request sucessful.');
         return result;
     }
 
-    async bulkInsert(data) {
+    public async bulkInsert(data: any) {
         const result = await this.client.bulk({
             body: data
         });
@@ -31,11 +33,11 @@ class ElasticService {
         return result;
     }
 
-    async deleteDocument(index, id) {
+    public async deleteDocument(index: string, id: string) {
         this.logger.info('Deleting document');
 
         const result = await this.client.deleteByQuery({
-            index: index,
+            index,
             body: {
                 query: {
                     bool: {
@@ -50,7 +52,7 @@ class ElasticService {
         });
 
         this.logger.info('Elastic request sucessful.');
-        return resolve(result);
+        return result;
     }
 }
 
