@@ -19,7 +19,7 @@ export class KazooIndexer {
         this.crossbarService = new CrossbarService(config.crossbarApi, appLogger);
     }
 
-    public async execute(startDate: string | null, endDate: string | null, days: number | null) {
+    public async execute(startDate: string | null, endDate: string | null, days: number | null, accountId: string | null) {
         try {
             const {rangeStart, rangeEnd}  = this.getDateRange(startDate, endDate, days);
 
@@ -31,8 +31,13 @@ export class KazooIndexer {
                 const accounts = await this.crossbarService.getAccountChildren(config.crossbarApi.accountId);
 
                 for (const account of accounts) {
+                    if (accountId && accountId !== account.id) {
+                        this.logger.info(`Skipping ${account.name} - ${account.id}`);
+                        continue;
+                    }
+
                     this.logger.info('');
-                    this.logger.info(`Processing - ${account.name}`);
+                    this.logger.info(`Processing - ${account.name} - ${account.id}`);
 
                     const cdrs = await this.crossbarService.getCdrsForDateRange(account.id, currentDate.toDate(), currentDate.toDate());
                     if (!cdrs || cdrs.length === 0) {
@@ -102,7 +107,7 @@ export class KazooIndexer {
 async function start(appLogger: Logger) {
     try {
         const indexer = new KazooIndexer(appLogger);
-        await indexer.execute(commander.start_date, commander.end_date, commander.days);
+        await indexer.execute(commander.start_date, commander.end_date, commander.days, commander.account_id);
     } catch (err) {
         appLogger.error(err);
     }
@@ -118,7 +123,7 @@ async function startLoop(appLogger: Logger) {
             executing = true;
             try {
                 const indexer = new KazooIndexer(appLogger);
-                await indexer.execute(null, null, null);
+                await indexer.execute(null, null, null, null);
             } catch (err) {
                 appLogger.error(err);
             }
@@ -134,6 +139,7 @@ commander
     .option('-l, --loop', 'Loop, ignores all other command args')
     .option('-s, --start_date [value]', 'Start Date in yyyymmdd, required if end_date is specified')
     .option('-e, --end_date [value]', 'End Date in yyyymmdd')
+    .option('-a, --account_id [value]', 'Account Id if you only want to index a single account')
     .option('-d, --days [value]', 'Days to go back from now, will take precedence over start and end date arguments', parseInt)
     .parse(process.argv);
 

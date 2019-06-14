@@ -1,5 +1,6 @@
 import request from 'request-promise-native';
 import moment from 'moment';
+import _ from 'lodash';
 import { CrossbarConfig } from './config';
 
 export class CrossbarService {
@@ -34,19 +35,7 @@ export class CrossbarService {
 
         const url = `${this.apiUrl}/accounts/${this.accountId}/recordings`;
 
-        const httpOptions = {
-            uri: url,
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Auth-Token': this.authToken
-            },
-            json: true
-        };
-
-        this.logger.info(`Sending request to Crossbar: ${JSON.stringify(httpOptions)}`);
-
-        const result = await request(httpOptions);
+        const result = await this.sendCrossbarGetRequest(url);
 
         return result;
     }
@@ -56,19 +45,7 @@ export class CrossbarService {
 
         const url = `${this.apiUrl}/accounts/${this.accountId}/recordings/${recordingId}`;
 
-        const httpOptions = {
-            uri: url,
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Auth-Token': this.authToken
-            },
-            json: true
-        };
-
-        this.logger.info(`Sending request to Crossbar: ${JSON.stringify(httpOptions)}`);
-
-        const result = await request(httpOptions);
+        const result = await this.sendCrossbarGetRequest(url);
 
         return result;
     }
@@ -76,25 +53,9 @@ export class CrossbarService {
     public async getAccountChildren(accountId: string) {
         this.logger.info(`Getting account children from Crossbar for account ${accountId}`);
 
-        if (!this.authToken) {
-            await this.authenticate();
-        }
-
         const url = `${this.apiUrl}/accounts/${this.accountId}/children`;
 
-        const httpOptions = {
-            uri: url,
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Auth-Token': this.authToken
-            },
-            json: true
-        };
-
-        this.logger.info(`Sending request to Crossbar: ${JSON.stringify(httpOptions)}`);
-
-        const result = await request(httpOptions);
+        const result = await this.sendCrossbarGetRequest(url);
 
         return result.data;
     }
@@ -102,9 +63,6 @@ export class CrossbarService {
     private async getCdrs(accountId: string, startTime: number, endTime: number) {
         let cdrs: any = [];
         this.logger.info(`Getting cdrs from Crossbar`);
-        if (!this.authToken) {
-            await this.authenticate();
-        }
 
         this.logger.info(`Using start time: ${startTime}`);
         
@@ -127,7 +85,11 @@ export class CrossbarService {
         return cdrs;
     }
 
-    private sendCrossbarGetRequest(url: string) {
+    private async sendCrossbarGetRequest(url: string) {
+        if (!this.authToken) {
+            await this.authenticate();
+        }
+
         const httpOptions = {
             uri: url,
             method: 'GET',
@@ -138,7 +100,9 @@ export class CrossbarService {
             json: true
         };
 
-        this.logger.info(`Sending request to Crossbar: ${JSON.stringify(httpOptions)}`);
+        const safeOptions = _.cloneDeep(httpOptions);
+        safeOptions.headers['X-Auth-Token'] = 'HIDDEN';
+        this.logger.info(`Sending request to Crossbar: ${JSON.stringify(safeOptions)}`);
 
         return request(httpOptions);
     }
@@ -162,13 +126,11 @@ export class CrossbarService {
               }
         };
 
-        // this.logger.info(`Sending request to Crossbar: ${JSON.stringify(httpOptions)}`);
         this.logger.info(`Sending Auth request to Crossbar`);
 
         const result = await request(httpOptions);
 
         this.logger.info('Authentication Complete');
-        // this.logger.info(result.auth_token);
 
         this.authToken = result.auth_token;
 
