@@ -15,10 +15,10 @@ export const config = {
         requestTimeout: 60000
     },
     crossbarApi: {
-        apiUrl: 'http://localhost:8000/v2',
-        account: 'company',
-        accountId: '',
-        credentials: ''
+        apiUrl: process.env.API_URL || 'http://localhost:8000/v2',
+        account: process.env.ACCOUNT || 'company',
+        accountId: process.env.ACCOUNT_ID || '',
+        credentials: process.env.CREDENTIALS || ''
     },
     logger: {
         directory: process.env.LOG_DIRECTORY || process.cwd() + '/logs',

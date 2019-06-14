@@ -25,19 +25,25 @@ export class KazooIndexer {
 
             this.logger.info('Starting');
 
-            const accounts = await this.crossbarService.getAccountChildren(config.crossbarApi.accountId);
+            const currentDate = rangeStart.clone();
 
-            for (const account of accounts) {
-                this.logger.info('');
-                this.logger.info(`Processing - ${account.name}`);
+            while (currentDate.isBefore(rangeEnd, 'day')) {
+                const accounts = await this.crossbarService.getAccountChildren(config.crossbarApi.accountId);
 
-                const cdrs = await this.crossbarService.getCdrsForDateRange(account.id, rangeStart.toDate(), rangeEnd.toDate());
-                if (!cdrs || cdrs.length === 0) {
-                    this.logger.info('No CDRs to index');
-                    continue;
+                for (const account of accounts) {
+                    this.logger.info('');
+                    this.logger.info(`Processing - ${account.name}`);
+
+                    const cdrs = await this.crossbarService.getCdrsForDateRange(account.id, currentDate.toDate(), currentDate.toDate());
+                    if (!cdrs || cdrs.length === 0) {
+                        this.logger.info('No CDRs to index');
+                        continue;
+                    }
+                    const formattedCdrs = this.formatBulkCdrInsert(cdrs);
+                    await this.elasticService.bulkInsert(formattedCdrs);
                 }
-                const formattedCdrs = this.formatBulkCdrInsert(cdrs);
-                await this.elasticService.bulkInsert(formattedCdrs);
+
+                currentDate.add(1, 'day');
             }
 
             this.logger.info(`Finished`);
@@ -71,7 +77,7 @@ export class KazooIndexer {
         return formattedCdrs;
     }
 
-    private getDateRange(startDate: string | null, endDate: string | null, days: number | null) {
+    private getDateRange(startDate: string | null, endDate: string | null, days: number | null): {rangeStart: moment.Moment, rangeEnd: moment.Moment; } {
         if (startDate && endDate) {
             this.logger.info(`Starting with CLI provided start date: ${startDate} and end date: ${endDate}`);
             const rangeStart = moment(startDate + ' 000000', 'YYYYMMDD HHmmss');
