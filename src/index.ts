@@ -29,7 +29,7 @@ export class KazooIndexer {
 
             while (currentDate.isBefore(rangeEnd, 'day')) {
                 const accounts = await this.crossbarService.getAccountChildren(config.crossbarApi.accountId);
-                const endDate = currentDate.clone().endOf('day');
+                const currentEndDate = currentDate.clone().endOf('day');
 
                 for (const account of accounts) {
                     if (accountId && accountId !== account.id) {
@@ -40,7 +40,7 @@ export class KazooIndexer {
                     this.logger.info('');
                     this.logger.info(`Processing - ${account.name} - ${account.id}`);
 
-                    const cdrs = await this.crossbarService.getCdrsForDateRange(account.id, currentDate.toDate(), endDate.toDate());
+                    const cdrs = await this.crossbarService.getCdrsForDateRange(account.id, currentDate.toDate(), currentEndDate.toDate());
                     if (!cdrs || cdrs.length === 0) {
                         this.logger.info('No CDRs to index');
                         continue;
