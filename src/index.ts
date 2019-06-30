@@ -47,7 +47,7 @@ export class KazooIndexer {
                         this.logger.info('No CDRs to index');
                         continue;
                     }
-                    const formattedCdrs = this.formatBulkCdrInsert(cdrs);
+                    const formattedCdrs = this.formatBulkCdrInsert(cdrs, account);
                     await this.elasticService.bulkInsert(formattedCdrs);
                 }
 
@@ -61,10 +61,14 @@ export class KazooIndexer {
         }
     }
 
-    private formatBulkCdrInsert(cdrs: any) {
+    private formatBulkCdrInsert(cdrs: any, account: any) {
         const formattedCdrs: any[] = [];
 
         cdrs.forEach((cdr: any) => {
+            cdr.account_id = account.id;
+            cdr.account_name = account.name;
+            cdr.account_realmn = account.realm;
+
             const index = 'cdrs_' + moment.utc(cdr.datetime).format('YYYYMM');
             const header = {
                 update: {
