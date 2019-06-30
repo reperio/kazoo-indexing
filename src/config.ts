@@ -1,5 +1,5 @@
 export const config = {
-    loopInterval: process.env.LOOP_INTERVAL || 60000,
+    loopInterval: process.env.LOOP_INTERVAL || 6000,
     loopWindow: process.env.LOOP_WINDOW || 5, // minutes
 
     elasticsearchApi: {
