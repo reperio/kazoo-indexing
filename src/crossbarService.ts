@@ -53,7 +53,7 @@ export class CrossbarService {
     public async getAccountChildren(accountId: string) {
         this.logger.info(`Getting account children from Crossbar for account ${accountId}`);
 
-        const url = `${this.apiUrl}/accounts/${this.accountId}/children`;
+        const url = `${this.apiUrl}/accounts/${this.accountId}/children?paginate=false`;
 
         const result = await this.sendCrossbarGetRequest(url);
 
