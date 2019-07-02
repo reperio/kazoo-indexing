@@ -29,7 +29,7 @@ export class KazooIndexer {
 
             while (currentDate.isSameOrBefore(rangeEnd, 'day')) {
                 this.logger.info(`Getting Accounts`);
-                const accounts = await this.crossbarService.getAccountChildren(config.crossbarApi.accountId);
+                const accounts = await this.crossbarService.getAccountDescendants(config.crossbarApi.accountId);
                 const currentEndDate = currentDate.clone().endOf('day');
 
                 for (const account of accounts) {

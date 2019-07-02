@@ -60,6 +60,16 @@ export class CrossbarService {
         return result.data;
     }
 
+    public async getAccountDescendants(accountId: string) {
+        this.logger.info(`Getting account descendants from Crossbar for account ${accountId}`);
+
+        const url = `${this.apiUrl}/accounts/${this.accountId}/descendants?paginate=false`;
+
+        const result = await this.sendCrossbarGetRequest(url);
+
+        return result.data;
+    }
+
     private async getCdrs(accountId: string, startTime: number, endTime: number) {
         let cdrs: any = [];
         this.logger.info(`Getting cdrs from Crossbar`);
