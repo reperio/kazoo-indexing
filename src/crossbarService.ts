@@ -133,7 +133,7 @@ export class CrossbarService {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Auth-Token': authToken
+                'X-Auth-Token': this.authToken
             },
             json: true
         };
