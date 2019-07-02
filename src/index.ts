@@ -12,15 +12,22 @@ export class KazooIndexer {
     private logger: Logger;
     private elasticService: ElasticService;
     private crossbarService: CrossbarService;
+    private authToken: string | null;
+    private accountId: string | null;
 
     constructor(appLogger: Logger) {
         this.logger = appLogger;
         this.elasticService = new ElasticService(config.elasticsearchApi, appLogger);
         this.crossbarService = new CrossbarService(config.crossbarApi, appLogger);
+        this.authToken = null;
+        this.accountId = null;
     }
 
     public async execute(startDate: string | null, endDate: string | null, days: number | null, accountId: string | null) {
         try {
+            if (!this.authToken || !this.accountId) {
+                await this.crossbarService.authenticate();
+            }
             const {rangeStart, rangeEnd}  = this.getDateRange(startDate, endDate, days);
 
             this.logger.info('Starting');
@@ -29,7 +36,7 @@ export class KazooIndexer {
 
             while (currentDate.isSameOrBefore(rangeEnd, 'day')) {
                 this.logger.info(`Getting Accounts`);
-                const accounts = await this.crossbarService.getAccountDescendants(config.crossbarApi.accountId);
+                const accounts = await this.crossbarService.getAccountDescendants(this.authToken, this.accountId);
                 const currentEndDate = currentDate.clone().endOf('day');
 
                 for (const account of accounts) {
