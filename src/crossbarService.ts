@@ -4,12 +4,13 @@ import _ from 'lodash';
 import { CrossbarConfig } from './config';
 
 export class CrossbarService {
+    public authToken: string | null;
+    public accountId: string | null;
+    public accountName: string | null;
     private apiUrl: string;
     private account: string;
-    private accountId: string | null;
     private credentials: any;
     private logger: any;
-    private authToken: string | null;
 
     constructor(config: CrossbarConfig, logger: any) {
         this.apiUrl = config.apiUrl;
@@ -18,44 +19,45 @@ export class CrossbarService {
         this.logger = logger;
         this.authToken = null;
         this.accountId = null;
+        this.accountName = null;
     }
 
-    public async getCdrsForDateRange(accountId: string, startDate: Date, endDate: Date) {
+    public async getCdrsForDateRange(authToken: string | null, accountId: string, startDate: Date, endDate: Date) {
         this.logger.info(`Getting cdrs for range ${startDate} - ${endDate}`);
 
         // seconds from year 0 - 1970 = 62167219200
         const startTime = moment(startDate).unix() + 62167219200;
         const endTime = moment(endDate).unix() + 62167219200;
 
-        return await this.getCdrs(accountId, startTime, endTime);
+        return await this.getCdrs(authToken, accountId, startTime, endTime);
     }
 
-    public async getRecordings() {
+    public async getRecordings(authToken: string | null) {
         this.logger.info(`Getting recordings from Crossbar`);
 
         const url = `${this.apiUrl}/accounts/${this.accountId}/recordings`;
 
-        const result = await this.sendCrossbarGetRequest(this.authToken, url);
+        const result = await this.sendCrossbarGetRequest(authToken, url);
 
         return result;
     }
 
-    public async getRecording(recordingId: string) {
+    public async getRecording(authToken: string | null, recordingId: string) {
         this.logger.info(`Getting recordings from Crossbar`);
 
         const url = `${this.apiUrl}/accounts/${this.accountId}/recordings/${recordingId}`;
 
-        const result = await this.sendCrossbarGetRequest(this.authToken, url);
+        const result = await this.sendCrossbarGetRequest(authToken, url);
 
         return result;
     }
 
-    public async getAccountChildren(accountId: string) {
+    public async getAccountChildren(authToken: string | null, accountId: string) {
         this.logger.info(`Getting account children from Crossbar for account ${accountId}`);
 
         const url = `${this.apiUrl}/accounts/${this.accountId}/children?paginate=false`;
 
-        const result = await this.sendCrossbarGetRequest(this.authToken, url);
+        const result = await this.sendCrossbarGetRequest(authToken, url);
 
         return result.data;
     }
@@ -65,7 +67,7 @@ export class CrossbarService {
 
         const url = `${this.apiUrl}/accounts/${this.accountId}/descendants?paginate=false`;
 
-        const result = await this.sendCrossbarGetRequest(this.authToken, url);
+        const result = await this.sendCrossbarGetRequest(authToken, url);
 
         return result.data;
     }
@@ -97,11 +99,12 @@ export class CrossbarService {
 
         this.authToken = result.auth_token;
         this.accountId = result.data.account_id;
+        this.accountName = result.data.account_name;
 
         return result;
     }
 
-    private async getCdrs(accountId: string, startTime: number, endTime: number) {
+    private async getCdrs(authToken: string | null, accountId: string, startTime: number, endTime: number) {
         let cdrs: any = [];
         this.logger.info(`Getting cdrs from Crossbar`);
 
@@ -109,7 +112,7 @@ export class CrossbarService {
         
         const url = `${this.apiUrl}/accounts/${accountId}/cdrs?page_size=100&created_from=${startTime}&created_to=${endTime}`;
 
-        let result = await this.sendCrossbarGetRequest(this.authToken, url);
+        let result = await this.sendCrossbarGetRequest(authToken, url);
 
         this.logger.info(`Crossbar request complete, found ${JSON.stringify(result.data.length)} cdrs`);
         cdrs = cdrs.concat(result.data);
@@ -118,7 +121,7 @@ export class CrossbarService {
             this.logger.info('Getting next page of CDR results');
             const nextPageUrl = `${this.apiUrl}/accounts/${accountId}/cdrs?page_size=100&created_from=${startTime}&created_to=${endTime}&start_key=${result.next_start_key}`;
 
-            result = await this.sendCrossbarGetRequest(this.authToken, nextPageUrl);
+            result = await this.sendCrossbarGetRequest(authToken, nextPageUrl);
             this.logger.info(`Crossbar request complete, found ${JSON.stringify(result.data.length)} cdrs`);
             cdrs = cdrs.concat(result.data);
         }
