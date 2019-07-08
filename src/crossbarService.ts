@@ -4,20 +4,22 @@ import _ from 'lodash';
 import { CrossbarConfig } from './config';
 
 export class CrossbarService {
+    public accountId: string | null;
+    public accountName: string | null;
     private apiUrl: string;
     private account: string;
-    private accountId: string;
     private credentials: any;
-    private logger: any;
     private authToken: string | null;
+    private logger: any;
 
     constructor(config: CrossbarConfig, logger: any) {
         this.apiUrl = config.apiUrl;
         this.account = config.account;
-        this.accountId = config.accountId;
         this.credentials = config.credentials;
         this.logger = logger;
         this.authToken = null;
+        this.accountId = null;
+        this.accountName = null;
     }
 
     public async getCdrsForDateRange(accountId: string, startDate: Date, endDate: Date) {
@@ -60,7 +62,7 @@ export class CrossbarService {
         return result.data;
     }
 
-    public async getAccountDescendants(accountId: string) {
+    public async getAccountDescendants(accountId: string | null) {
         this.logger.info(`Getting account descendants from Crossbar for account ${accountId}`);
 
         const url = `${this.apiUrl}/accounts/${this.accountId}/descendants?paginate=false`;
@@ -68,6 +70,38 @@ export class CrossbarService {
         const result = await this.sendCrossbarGetRequest(url);
 
         return result.data;
+    }
+
+    public async authenticate() {
+        this.logger.info(`Authenticating to Crossbar`);
+
+        const url = `${this.apiUrl}/user_auth`;
+
+        const httpOptions = {
+            uri: url,
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            json: {
+                data: {
+                  credentials: this.credentials,
+                  account_name: this.account
+                }
+              }
+        };
+
+        this.logger.info(`Sending Auth request to Crossbar`);
+
+        const result = await request(httpOptions);
+
+        this.logger.info('Authentication Complete');
+
+        this.authToken = result.auth_token;
+        this.accountId = result.data.account_id;
+        this.accountName = result.data.account_name;
+
+        return result;
     }
 
     private async getCdrs(accountId: string, startTime: number, endTime: number) {
@@ -96,9 +130,6 @@ export class CrossbarService {
     }
 
     private async sendCrossbarGetRequest(url: string) {
-        if (!this.authToken) {
-            await this.authenticate();
-        }
 
         const httpOptions = {
             uri: url,
@@ -115,35 +146,5 @@ export class CrossbarService {
         this.logger.info(`Sending request to Crossbar: ${JSON.stringify(safeOptions)}`);
 
         return request(httpOptions);
-    }
-
-    private async authenticate() {
-        this.logger.info(`Authenticating to Crossbar`);
-
-        const url = `${this.apiUrl}/user_auth`;
-
-        const httpOptions = {
-            uri: url,
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            json: {
-                data: {
-                  credentials: this.credentials,
-                  account_name: this.account
-                }
-              }
-        };
-
-        this.logger.info(`Sending Auth request to Crossbar`);
-
-        const result = await request(httpOptions);
-
-        this.logger.info('Authentication Complete');
-
-        this.authToken = result.auth_token;
-
-        return result;
     }
 }

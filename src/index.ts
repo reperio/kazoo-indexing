@@ -21,6 +21,9 @@ export class KazooIndexer {
 
     public async execute(startDate: string | null, endDate: string | null, days: number | null, accountId: string | null) {
         try {
+            if (!this.crossbarService.accountId) {
+                await this.crossbarService.authenticate();
+            }
             const {rangeStart, rangeEnd}  = this.getDateRange(startDate, endDate, days);
 
             this.logger.info('Starting');
@@ -29,7 +32,8 @@ export class KazooIndexer {
 
             while (currentDate.isSameOrBefore(rangeEnd, 'day')) {
                 this.logger.info(`Getting Accounts`);
-                const accounts = await this.crossbarService.getAccountDescendants(config.crossbarApi.accountId);
+                const descendantAccounts = await this.crossbarService.getAccountDescendants(this.crossbarService.accountId);
+                const accounts = [{id: this.crossbarService.accountId, name: this.crossbarService.accountName}, ...descendantAccounts];
                 const currentEndDate = currentDate.clone().endOf('day');
 
                 for (const account of accounts) {

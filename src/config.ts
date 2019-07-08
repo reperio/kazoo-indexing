@@ -17,8 +17,7 @@ export const config = {
     crossbarApi: {
         apiUrl: process.env.API_URL || 'http://localhost:8000/v2',
         account: process.env.ACCOUNT || 'company',
-        accountId: process.env.ACCOUNT_ID || '',
-        credentials: process.env.CREDENTIALS || ''
+        credentials: process.env.CREDENTIALS || "echo 'user:pass' | md5sum"
     },
     logger: {
         directory: process.env.LOG_DIRECTORY || process.cwd() + '/logs',
