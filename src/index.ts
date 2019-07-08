@@ -21,7 +21,7 @@ export class KazooIndexer {
 
     public async execute(startDate: string | null, endDate: string | null, days: number | null, accountId: string | null) {
         try {
-            if (!this.crossbarService.authToken || !this.crossbarService.accountId) {
+            if (!this.crossbarService.accountId) {
                 await this.crossbarService.authenticate();
             }
             const {rangeStart, rangeEnd}  = this.getDateRange(startDate, endDate, days);
@@ -32,7 +32,7 @@ export class KazooIndexer {
 
             while (currentDate.isSameOrBefore(rangeEnd, 'day')) {
                 this.logger.info(`Getting Accounts`);
-                const descendantAccounts = await this.crossbarService.getAccountDescendants(this.crossbarService.authToken, this.crossbarService.accountId);
+                const descendantAccounts = await this.crossbarService.getAccountDescendants(this.crossbarService.accountId);
                 const accounts = [{id: this.crossbarService.accountId, name: this.crossbarService.accountName}, ...descendantAccounts];
                 const currentEndDate = currentDate.clone().endOf('day');
 
@@ -46,7 +46,7 @@ export class KazooIndexer {
                     this.logger.info('');
                     this.logger.info(`Processing - ${account.name} - ${account.id}`);
 
-                    const cdrs = await this.crossbarService.getCdrsForDateRange(this.crossbarService.authToken, account.id, currentDate.toDate(), currentEndDate.toDate());
+                    const cdrs = await this.crossbarService.getCdrsForDateRange(account.id, currentDate.toDate(), currentEndDate.toDate());
                     if (!cdrs || cdrs.length === 0) {
                         this.logger.info('No CDRs to index');
                         continue;
