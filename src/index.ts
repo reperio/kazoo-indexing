@@ -33,7 +33,12 @@ export class KazooIndexer {
             while (currentDate.isSameOrBefore(rangeEnd, 'day')) {
                 this.logger.info(`Getting Accounts`);
                 const descendantAccounts = await this.crossbarService.getAccountDescendants(this.crossbarService.accountId);
-                const accounts = [{id: this.crossbarService.accountId, name: this.crossbarService.accountName}, ...descendantAccounts];
+                let accounts;
+                if (config.includeParent === true) {
+                    accounts = [{id: this.crossbarService.accountId, name: this.crossbarService.accountName}, ...descendantAccounts];
+                } else {
+                accounts = descendantAccounts;
+                }
                 const currentEndDate = currentDate.clone().endOf('day');
 
                 for (const account of accounts) {

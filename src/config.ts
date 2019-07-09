@@ -1,6 +1,7 @@
 export const config = {
     loopInterval: process.env.LOOP_INTERVAL || 6000,
     loopWindow: process.env.LOOP_WINDOW || 5, // minutes
+    includeParent: process.env.INCLUDE_PARENT || true,
 
     elasticsearchApi: {
         host: [
