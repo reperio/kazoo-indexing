@@ -27,8 +27,15 @@ export const config = {
     ESIndexes: {
         cdrs: process.env.INDEX_CDR || 'cdrs',
         recordings: process.env.INDEX_RECORDING || 'recordings'
+    },
+    server: {
+        host: process.env.SERVER_HOST || '0.0.0.0',
+        get port(): number {
+            return parseInt(process.env.SERVER_PORT || '3000');
+        }
     }
 };
 
 export type Config = typeof config;
 export type CrossbarConfig = typeof config.crossbarApi;
+export type ServerConfig = typeof config.server;
