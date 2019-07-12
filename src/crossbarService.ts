@@ -22,6 +22,12 @@ export class CrossbarService {
         this.accountName = null;
     }
 
+    public async getCdrByAccountAndId(accountId: string, cdrId: string) {
+        const url = `${this.apiUrl}/accounts/${accountId}/cdrs/${cdrId}`;
+
+        return await this.sendCrossbarGetRequest(url);
+    }
+
     public async getCdrsForDateRange(accountId: string, startDate: Date, endDate: Date) {
         this.logger.info(`Getting cdrs for range ${startDate} - ${endDate}`);
 
