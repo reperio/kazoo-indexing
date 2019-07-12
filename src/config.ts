@@ -33,6 +33,11 @@ export const config = {
         get port(): number {
             return parseInt(process.env.SERVER_PORT || '3000');
         }
+    },
+    cache: {
+        get cleanInterval(): number {
+            return parseInt(process.env.DICT_CLEAN_INTERVAL || `${1000 * 60 * 15}`);
+        }
     }
 };
 
