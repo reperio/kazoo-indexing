@@ -4,7 +4,7 @@ import { AppLogger } from './logger';
 import { Cache } from './cache';
 import { CrossbarService } from './crossbarService';
 import { ElasticService } from './elasticService';
-import * as moment from 'moment';
+import * as moment from 'moment-timezone';
 
 const run = async () => {
     const logger = AppLogger(config);
@@ -12,16 +12,16 @@ const run = async () => {
     const server = new Server(config.server);
     const cache = new Cache();
 
+    const crossbarService = new CrossbarService(config.crossbarApi, logger);
+    if (!crossbarService.accountId) {
+        await crossbarService.authenticate();
+    }
+
     server.route({
         path: '/api/calls',
         method: 'POST',
         handler: async (request, h) => {
-            const crossbarService = new CrossbarService(config.crossbarApi, logger);
             const elasticService = new ElasticService(config.elasticsearchApi, logger);
-
-            if (!crossbarService.accountId) {
-                await crossbarService.authenticate();
-            }
             
             const callRecord: any = request.payload;
             logger.debug('Received new call record');
@@ -34,6 +34,13 @@ const run = async () => {
 
                 if (!cache.hasKey(formattedCdrId)) {
                     const cdr = (await crossbarService.getCdrByAccountAndId(callRecord.account_id, formattedCdrId)).data;
+
+                    const cdrDate = moment.unix(cdr.timestamp - 62167219200);
+                    cdr.datetime = cdrDate.toDate();
+                    cdr.unix_timestamp = cdrDate.unix();
+                    cdr.rfc_1036 = cdrDate.format('ddd, D MMM YYYY hh:mm:ss zz');
+                    cdr.iso_8601 = cdrDate.format('YYYY-MM-DD');
+
                     logger.debug(JSON.stringify(cdr));
 
                     const index = 'cdrs_' + moment.utc(cdr.datetime).format('YYYYMM');

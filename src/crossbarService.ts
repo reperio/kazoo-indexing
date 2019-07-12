@@ -151,6 +151,13 @@ export class CrossbarService {
         safeOptions.headers['X-Auth-Token'] = 'HIDDEN';
         this.logger.info(`Sending request to Crossbar: ${JSON.stringify(safeOptions)}`);
 
-        return request(httpOptions);
+        let response = await request(httpOptions);
+
+        if (response.statusCode === 401) {
+            await this.authenticate();
+            response = await request(httpOptions);
+        }
+
+        return response;
     }
 }

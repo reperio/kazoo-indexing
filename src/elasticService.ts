@@ -32,6 +32,8 @@ export class ElasticService {
             body: data
         });
 
+        this.logger.debug(result);
+
         this.logger.info('Bulk insert finished');
 
         return result;
