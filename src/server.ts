@@ -21,6 +21,8 @@ const run = async () => {
         path: '/api/calls',
         method: 'POST',
         handler: async (request, h) => {
+            setTimeout(async () => {
+
             const elasticService = new ElasticService(config.elasticsearchApi, logger);
             
             const callRecord: any = request.payload;
@@ -36,7 +38,7 @@ const run = async () => {
                     const cdr = (await crossbarService.getCdrByAccountAndId(callRecord.account_id, formattedCdrId)).data;
 
                     const cdrDate = moment.unix(cdr.timestamp - 62167219200);
-                    cdr.datetime = cdrDate.toDate();
+                    cdr.datetime = cdrDate.format('YYYY-MM-DD hh:mm:ss');
                     cdr.unix_timestamp = cdrDate.unix();
                     cdr.rfc_1036 = cdrDate.format('ddd, D MMM YYYY hh:mm:ss zz');
                     cdr.iso_8601 = cdrDate.format('YYYY-MM-DD');
@@ -69,6 +71,7 @@ const run = async () => {
                 logger.error(err);
             }
 
+            }, parseInt(config.webhookTimeout));
             return 'success';
         }
     });

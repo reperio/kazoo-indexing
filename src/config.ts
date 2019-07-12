@@ -38,7 +38,8 @@ export const config = {
         get cleanInterval(): number {
             return parseInt(process.env.DICT_CLEAN_INTERVAL || `${1000 * 60 * 15}`);
         }
-    }
+    },
+    webhookTimeout: process.env.WEBHOOK_TIMEOUT || '2000'
 };
 
 export type Config = typeof config;
