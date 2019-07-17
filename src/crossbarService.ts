@@ -151,13 +151,20 @@ export class CrossbarService {
         safeOptions.headers['X-Auth-Token'] = 'HIDDEN';
         this.logger.info(`Sending request to Crossbar: ${JSON.stringify(safeOptions)}`);
 
-        let response = await request(httpOptions);
-
-        if (response.statusCode === 401) {
+        try {
+            return await request(httpOptions);
+        } catch (err) {
+            this.logger.error(err);
+            this.logger.info('Attempting reauthentication...');
             await this.authenticate();
-            response = await request(httpOptions);
-        }
+            this.logger.info('Resending request...');
 
-        return response;
+            try {
+                return await request(httpOptions);
+            } catch (err) {
+                this.logger.error('Reauthentication did not work');
+                this.logger.error(err);
+            }
+        }
     }
 }

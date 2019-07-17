@@ -21,56 +21,55 @@ const run = async () => {
         path: '/api/calls',
         method: 'POST',
         handler: async (request, h) => {
-            setTimeout(async () => {
 
             const elasticService = new ElasticService(config.elasticsearchApi, logger);
-            
             const callRecord: any = request.payload;
             logger.debug('Received new call record');
             logger.debug(JSON.stringify(callRecord));
-            
-            try {
-                const timestamp = moment.unix(callRecord.timestamp - 62167219200);
-                const formattedCdrId = `${timestamp.format('YYYYMM')}-${callRecord.call_id}`;
-                logger.debug(formattedCdrId);
 
-                if (!cache.hasKey(formattedCdrId)) {
-                    const cdr = (await crossbarService.getCdrByAccountAndId(callRecord.account_id, formattedCdrId)).data;
+            setTimeout(async () => {
+                try {
+                    const timestamp = moment.unix(callRecord.timestamp - 62167219200);
+                    const formattedCdrId = `${timestamp.format('YYYYMM')}-${callRecord.call_id}`;
+                    logger.debug(formattedCdrId);
 
-                    const cdrDate = moment.unix(cdr.timestamp - 62167219200);
-                    cdr.datetime = cdrDate.format('YYYY-MM-DD hh:mm:ss');
-                    cdr.unix_timestamp = cdrDate.unix();
-                    cdr.rfc_1036 = cdrDate.format('ddd, D MMM YYYY hh:mm:ss zz');
-                    cdr.iso_8601 = cdrDate.format('YYYY-MM-DD');
+                    if (!cache.hasKey(formattedCdrId)) {
+                        const cdr = (await crossbarService.getCdrByAccountAndId(callRecord.account_id, formattedCdrId)).data;
 
-                    logger.debug(JSON.stringify(cdr));
+                        const cdrDate = moment.unix(cdr.timestamp - 62167219200);
+                        cdr.datetime = cdrDate.format('YYYY-MM-DD hh:mm:ss');
+                        cdr.unix_timestamp = cdrDate.unix();
+                        cdr.rfc_1036 = cdrDate.format('ddd, D MMM YYYY hh:mm:ss zz');
+                        cdr.iso_8601 = cdrDate.format('YYYY-MM-DD');
+                        cdr.iso_8601_combined = cdrDate.format('YYYY-MM-DDThh:mm:ss') + 'Z';
 
-                    const index = 'cdrs_' + moment.utc(cdr.datetime).format('YYYYMM');
-                    const header = {
-                        update: {
-                            _index: index,
-                            _type: '_doc',
-                            _id: cdr.id
-                        }
-                    };
+                        logger.debug(JSON.stringify(cdr));
 
-                    const doc = {
-                        doc: cdr,
-                        doc_as_upsert: true
-                    };
+                        const index = 'cdrs_' + moment.utc(cdr.datetime).format('YYYYMM');
+                        const header = {
+                            update: {
+                                _index: index,
+                                _type: '_doc',
+                                _id: cdr.id
+                            }
+                        };
 
-                    await elasticService.bulkInsert([header, doc]);
-                    logger.info(`${formattedCdrId} indexed into elasticsearch`);
+                        const doc = {
+                            doc: cdr,
+                            doc_as_upsert: true
+                        };
 
-                    cache.set(formattedCdrId, timestamp);
-                    logger.info('added formatted cdr id to cache');
-                } else {
-                    logger.info(`CDR: ${formattedCdrId} has already been processed`);
+                        await elasticService.bulkInsert([header, doc]);
+                        logger.info(`${formattedCdrId} indexed into elasticsearch`);
+
+                        cache.set(formattedCdrId, timestamp);
+                        logger.info('added formatted cdr id to cache');
+                    } else {
+                        logger.info(`CDR: ${formattedCdrId} has already been processed`);
+                    }
+                } catch (err) {
+                    logger.error(err);
                 }
-            } catch (err) {
-                logger.error(err);
-            }
-
             }, parseInt(config.webhookTimeout));
             return 'success';
         }
