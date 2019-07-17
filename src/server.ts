@@ -37,11 +37,11 @@ const run = async () => {
                         const cdr = (await crossbarService.getCdrByAccountAndId(callRecord.account_id, formattedCdrId)).data;
 
                         const cdrDate = moment.unix(cdr.timestamp - 62167219200);
-                        cdr.datetime = cdrDate.format('YYYY-MM-DD hh:mm:ss');
+                        cdr.datetime = cdrDate.format('YYYY-MM-DD HH:mm:ss');
                         cdr.unix_timestamp = cdrDate.unix();
-                        cdr.rfc_1036 = cdrDate.format('ddd, D MMM YYYY hh:mm:ss zz');
+                        cdr.rfc_1036 = cdrDate.format('ddd, D MMM YYYY HH:mm:ss zz');
                         cdr.iso_8601 = cdrDate.format('YYYY-MM-DD');
-                        cdr.iso_8601_combined = cdrDate.format('YYYY-MM-DDThh:mm:ss') + 'Z';
+                        cdr.iso_8601_combined = cdrDate.format('YYYY-MM-DDTHH:mm:ss') + 'Z';
 
                         logger.debug(JSON.stringify(cdr));
 
