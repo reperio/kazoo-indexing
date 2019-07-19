@@ -43,6 +43,20 @@ const run = async () => {
                         cdr.iso_8601 = cdrDate.format('YYYY-MM-DD');
                         cdr.iso_8601_combined = cdrDate.format('YYYY-MM-DDTHH:mm:ss') + 'Z';
 
+                        try {
+                            cdr.dialed_number = cdr.call_direction === 'inbound' ? cdr.request.split('@')[0] : cdr.to.split('@')[0];
+                        } catch (err) {
+                            logger.error('Failed to determine dialed_number');
+                            logger.error(err);
+                        }
+                        
+                        try {
+                            cdr.calling_from = cdr.call_direction === 'inbound' ? cdr.caller_id_number : cdr.from_uri.split('@')[0];
+                        } catch (err) {
+                            logger.error('Failed to determine calling_from');
+                            logger.error(err);
+                        }
+                        
                         logger.debug(JSON.stringify(cdr));
 
                         const index = 'cdrs_' + moment.utc(cdr.datetime).format('YYYYMM');
