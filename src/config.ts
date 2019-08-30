@@ -39,6 +39,13 @@ export const config = {
             return parseInt(process.env.DICT_CLEAN_INTERVAL || `${1000 * 60 * 15}`);
         }
     },
+    amqp: {
+        connection: process.env.AMQP_CONNECTION_JSON != null ? JSON.parse(process.env.AMQP_CONNECTION_JSON) : (process.env.AMQP_CONNECTION_STRING || {hostname: 'localhost', username: 'guest', password: 'guest'}),
+        queueName: process.env.AMQP_QUEUE_NAME || 'cdr_processor',
+        exchangeName: process.env.AMQP_EXCHANGE_NAME || 'callevt',
+        routingKey: process.env.AMQP_ROUTING_KEY || 'call.CHANNEL_DESTROY.*',
+        connectionRetryIntervalSeconds: 10
+    },
     webhookTimeout: process.env.WEBHOOK_TIMEOUT || '2000'
 };
 
