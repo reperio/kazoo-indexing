@@ -35,6 +35,17 @@ async function getAMQPConnection(): Promise<amqp.Connection> {
 }
 
 async function main() {
+    let crossbarService: CrossbarService;
+    if (config.useCrossbarAMQP) {
+        logger.info('using crossbar');
+        crossbarService = new CrossbarService(config.crossbarApi, logger);
+        if (!crossbarService.accountId) {
+            await crossbarService.authenticate();
+        }
+    } else {
+        logger.info('not using crossbar');
+    }
+
     logger.info(`Attempting to establish amqp connection`);
     const connection = await getAMQPConnection();
 
@@ -72,38 +83,39 @@ async function main() {
                 }, {});
             };
 
-            const newRecord = objectKeysToLowerCase(callDetails);
-            const processedRecord = CDRPRocessor.processCDR(newRecord, logger);
-            logger.debug(processedRecord);
+            const callRecord = objectKeysToLowerCase(callDetails);
+            const timestamp = moment.unix(callRecord.timestamp - 62167219200);
+            const formattedCdrId = `${timestamp.format('YYYYMM')}-${callRecord.call_id}`;
+            callRecord.call_id = formattedCdrId;
 
-            processedRecord.id = processedRecord.call_id;
-            delete processedRecord.call_id;
+            const cdr = CDRPRocessor.processCDR(config.useCrossbarAMQP ? (await crossbarService.getCdrByAccountAndId(callRecord.custom_channel_vars.account_id, formattedCdrId)).data : callRecord, logger);
 
-            const index = 'cdrs_' + moment.utc(processedRecord.datetime).format('YYYYMM');
+            logger.debug(cdr);
+
+            const index = 'cdrs_' + moment.utc(cdr.datetime).format('YYYYMM');
             const header = {
                 update: {
                     _index: index,
                     _type: '_doc',
-                    _id: processedRecord.id
+                    _id: cdr.id
                 }
             };
 
             const doc = {
-                doc: processedRecord,
+                doc: cdr,
                 doc_as_upsert: true
             };
 
             logger.info(`Indexing document into elasticsearch`);
             const elasticService = new ElasticService(config.elasticsearchApi, logger);
             await elasticService.bulkInsert([header, doc]);
-            logger.info(`${processedRecord.id} indexed into elasticsearch`);
+            logger.info(`${cdr.id} indexed into elasticsearch`);
 
-            const timestamp = moment.unix(processedRecord.timestamp - 62167219200);
-            cache.set(processedRecord.id, timestamp);
+            cache.set(cdr.id, timestamp);
             logger.info('added cdr id to cache');
         } catch (e) {
+            logger.error('Failed to process CDR');
             logger.error(e);
-            logger.info('Failed to process CDR');
         }
     }, {noAck: true});
 }

@@ -26,6 +26,9 @@ export default class CDRProcessor {
             logger.error(err);
         }
 
+        cdr.id = cdr.call_id;
+        delete cdr.call_id;
+
         return cdr;
     }
 }

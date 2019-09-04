@@ -47,7 +47,8 @@ export const config = {
         connectionRetryIntervalSeconds: 10
     },
     webhookTimeout: process.env.WEBHOOK_TIMEOUT || '2000',
-    useCrossbarWebhook: process.env.WEBHOOK_USE_CROSSBAR != null ? process.env.WEBHOOK_USE_CROSSBAR.toLowerCase() === 'true' : true
+    useCrossbarWebhook: process.env.WEBHOOK_USE_CROSSBAR != null ? process.env.WEBHOOK_USE_CROSSBAR.toLowerCase() === 'true' : true,
+    useCrossbarAMQP: process.env.AMQP_USE_CROSSBAR != null ? process.env.AMQP_USE_CROSSBAR.toLowerCase() === 'true' : false
 };
 
 export type Config = typeof config;

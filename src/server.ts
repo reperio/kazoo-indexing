@@ -47,9 +47,6 @@ const run = async () => {
 
                         cdr = CDRPRocessor.processCDR(cdr, logger);
                         
-                        cdr.id = cdr.call_id;
-                        delete cdr.call_id;
-                        
                         logger.debug(JSON.stringify(cdr));
 
                         const index = 'cdrs_' + moment.utc(cdr.datetime).format('YYYYMM');
