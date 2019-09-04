@@ -46,7 +46,8 @@ export const config = {
         routingKey: process.env.AMQP_ROUTING_KEY || 'call.CHANNEL_DESTROY.*',
         connectionRetryIntervalSeconds: 10
     },
-    webhookTimeout: process.env.WEBHOOK_TIMEOUT || '2000'
+    webhookTimeout: process.env.WEBHOOK_TIMEOUT || '2000',
+    useCrossbarWebhook: process.env.WEBHOOK_USE_CROSSBAR != null ? process.env.WEBHOOK_USE_CROSSBAR.toLowerCase() === 'true' : true
 };
 
 export type Config = typeof config;
