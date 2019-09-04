@@ -102,6 +102,7 @@ export class CrossbarService {
         const result = await request(httpOptions);
 
         this.logger.info('Authentication Complete');
+        this.logger.debug(result.data);
 
         this.authToken = result.auth_token;
         this.accountId = result.data.account_id;
