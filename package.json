@@ -27,7 +27,7 @@
     "commander": "^2.19.0",
     "elasticsearch": "^15.4.1",
     "hapi": "^18.1.0",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.13",
     "moment": "^2.23.0",
     "moment-timezone": "^0.5.26",
     "request": "^2.88.0",
