@@ -29,7 +29,7 @@
     "hapi": "^18.1.0",
     "lodash": "^4.17.11",
     "moment": "^2.23.0",
-    "moment-timezone": "^0.5.26",
+    "moment-timezone": "^0.5.35",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.5",
     "tslint": "^5.17.0",
